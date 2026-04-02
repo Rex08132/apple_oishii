@@ -1,323 +1,311 @@
-import React, { useState } from 'react';
-import { Calculator, Plus, Trash2, Trophy, AlertCircle, ShoppingCart, Beef, User, Scale } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健身精算師：蛋白質 CP 值比較器</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen p-4 md:p-8 text-slate-900">
 
-const App = () => {
-  // 基準值：超商雞胸肉 (60元 / 23g 蛋白質)
-  const BASELINE = {
-    price: 60,
-    protein: 23,
-  };
-  const baselineEfficiency = (BASELINE.protein / BASELINE.price) * 100; // 約 38.33g / 100元
-
-  const [items, setItems] = useState([]);
-  const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    totalWeight: '', // 整包總重量
-    inputType: 'percent', // 'percent', 'per100g', 'perServing'
-    proteinValue: '', // 標籤上的蛋白質數字
-    servingSize: '', // 如果是每份標示，一份是多少g
-  });
-
-  const calculateTotalProtein = () => {
-    const weight = parseFloat(formData.totalWeight);
-    const value = parseFloat(formData.proteinValue);
-    const serving = parseFloat(formData.servingSize);
-
-    if (isNaN(weight) || isNaN(value)) return 0;
-
-    switch (formData.inputType) {
-      case 'percent':
-        return (weight * value) / 100;
-      case 'per100g':
-        return (weight / 100) * value;
-      case 'perServing':
-        if (isNaN(serving) || serving <= 0) return 0;
-        return (weight / serving) * value;
-      default:
-        return 0;
-    }
-  };
-
-  const addItem = (e) => {
-    e.preventDefault();
-    const totalProtein = calculateTotalProtein();
-    const price = parseFloat(formData.price);
-
-    if (!formData.name || isNaN(price) || price <= 0 || totalProtein <= 0) return;
-
-    const newItem = {
-      id: Date.now(),
-      name: formData.name,
-      price: price,
-      totalWeight: parseFloat(formData.totalWeight),
-      totalProtein: totalProtein,
-      efficiency: (totalProtein / price) * 100,
-      inputType: formData.inputType
-    };
-
-    setItems([newItem, ...items]);
-    // 重置表單，保留部分設定方便連續輸入
-    setFormData({ 
-      ...formData, 
-      name: '', 
-      price: '', 
-      totalWeight: '', 
-      proteinValue: '', 
-      servingSize: '' 
-    });
-  };
-
-  const removeItem = (id) => {
-    setItems(items.filter(item => item.id !== id));
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-900">
-      <div className="max-w-5xl mx-auto">
-        
-        {/* Header */}
-        <header className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center p-3 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-200">
-            <Calculator className="text-white w-8 h-8" />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-800">健身精算師：蛋白質 CP 值</h1>
-          <p className="text-slate-500 mt-2 text-sm">貓食與人食通用比較</p>
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <div class="inline-flex items-center justify-center p-3 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-200">
+                <i class="fa-solid fa-calculator text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-800">健身精算師：蛋白質 CP 值</h1>
+            <p class="text-slate-500 mt-2 text-sm">貓食與人食通用比較 · 174cm / 78kg 壯漢補給精算</p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Left: Input Form */}
-          <div className="lg:col-span-5 space-y-6">
-            <section className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-              <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-600">
-                <Plus className="w-5 h-5" /> 新增商品標示
-              </h2>
-              
-              <form onSubmit={addItem} className="space-y-5">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">產品名稱</label>
-                    <input 
-                      type="text" 
-                      placeholder="例如：乳清蛋白、凍乾、雞肉條"
-                      className="w-full p-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none transition-all"
-                      value={formData.name}
-                      onChange={e => setFormData({...formData, name: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">售價 (TWD)</label>
-                      <input 
-                        type="number" 
-                        placeholder="例如：387"
-                        className="w-full p-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none transition-all"
-                        value={formData.price}
-                        onChange={e => setFormData({...formData, price: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">整包總重 (g)</label>
-                      <input 
-                        type="number" 
-                        placeholder="例如：160"
-                        className="w-full p-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none transition-all"
-                        value={formData.totalWeight}
-                        onChange={e => setFormData({...formData, totalWeight: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-5 bg-indigo-50 rounded-3xl space-y-4">
-                  <div className="flex flex-wrap gap-2 p-1 bg-white/50 rounded-xl">
-                    {[
-                      { id: 'percent', label: '寵物 (%)', icon: Beef },
-                      { id: 'per100g', label: '每 100g (g)', icon: Scale },
-                      { id: 'perServing', label: '每份 (g)', icon: User }
-                    ].map(type => (
-                      <button 
-                        key={type.id}
-                        type="button"
-                        onClick={() => setFormData({...formData, inputType: type.id})}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-lg text-xs font-bold transition-all ${formData.inputType === type.id ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-white'}`}
-                      >
-                        <type.icon className="w-3.5 h-3.5" />
-                        {type.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-indigo-800 mb-1">
-                        {formData.inputType === 'percent' ? '標示蛋白質 %' : '標示蛋白質含量 (g)'}
-                      </label>
-                      <input 
-                        type="number" 
-                        step="0.1"
-                        placeholder="填寫包裝上的數字"
-                        className="w-full p-3 bg-white rounded-xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                        value={formData.proteinValue}
-                        onChange={e => setFormData({...formData, proteinValue: e.target.value})}
-                      />
-                    </div>
-
-                    {formData.inputType === 'perServing' && (
-                      <div className="animate-in fade-in slide-in-from-top-2">
-                        <label className="block text-xs font-bold text-indigo-800 mb-1">每一份是多少克 (g)？</label>
-                        <input 
-                          type="number" 
-                          placeholder="例如：30"
-                          className="w-full p-3 bg-white rounded-xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                          value={formData.servingSize}
-                          onChange={e => setFormData({...formData, servingSize: e.target.value})}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <button 
-                  type="submit"
-                  className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-5 h-5" /> 加入清單
-                </button>
-              </form>
-            </section>
-
-            {/* Baseline Info Card */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-950 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4 text-indigo-400">
-                  <ShoppingCart className="w-6 h-6" />
-                  <h3 className="font-bold text-lg">對照基準線</h3>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-slate-400 text-xs font-bold uppercase tracking-widest">超商即食雞胸肉</div>
-                  <div className="text-4xl font-black">{baselineEfficiency.toFixed(1)} <span className="text-sm font-normal text-slate-400">g / 100元</span></div>
-                  <p className="text-slate-500 text-[10px] mt-4 leading-tight">
-                    * 這是你的增肌減脂黃金線。任何超過此數值的產品都是極高 CP 值的補給選擇。
-                  </p>
-                </div>
-              </div>
-              <div className="absolute -bottom-4 -right-4 opacity-10">
-                <Beef size={120} />
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Comparison List */}
-          <div className="lg:col-span-7">
-            <div className="flex items-center justify-between mb-6 px-2">
-              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <Trophy className="w-6 h-6 text-yellow-500" /> CP 值排行對決
-              </h2>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div> 優於基準
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                  <div className="w-2 h-2 rounded-full bg-indigo-500"></div> 低於基準
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {items.length === 0 && (
-                <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2.5rem] p-16 text-center text-slate-300">
-                  <Scale className="w-16 h-16 mx-auto mb-4 opacity-10" />
-                  <p className="font-medium">尚未加入比較對象</p>
-                  <p className="text-xs mt-1">請在左側輸入食品標籤數據</p>
-                </div>
-              )}
-
-              {items.sort((a, b) => b.efficiency - a.efficiency).map((item) => {
-                const isWinner = item.efficiency > baselineEfficiency;
-                const ratio = (item.efficiency / baselineEfficiency).toFixed(1);
-                
-                return (
-                  <div 
-                    key={item.id} 
-                    className={`group relative bg-white p-6 rounded-[2rem] border-2 transition-all hover:shadow-xl ${isWinner ? 'border-emerald-100' : 'border-white'}`}
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.efficiency > baselineEfficiency ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-50 text-indigo-500'}`}>
-                            {item.efficiency > baselineEfficiency ? <Trophy size={16} /> : <Beef size={16} />}
-                          </span>
-                          <h4 className="font-bold text-slate-800 text-lg">{item.name}</h4>
-                        </div>
-                        <div className="flex gap-3 text-xs font-bold text-slate-400 ml-10">
-                          <span>整包 {item.totalWeight}g</span>
-                          <span>蛋白質 {item.totalProtein.toFixed(1)}g</span>
-                          <span>售價 ${item.price}</span>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => removeItem(item.id)}
-                        className="text-slate-300 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-full"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    <div className="flex items-end justify-between ml-10">
-                      <div className="space-y-1">
-                        <div className={`text-3xl font-black tracking-tight ${isWinner ? 'text-emerald-600' : 'text-indigo-600'}`}>
-                          {item.efficiency.toFixed(1)} <span className="text-sm font-medium text-slate-400">g / 100元</span>
-                        </div>
-                      </div>
-
-                      <div className={`px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-tighter ${isWinner ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-100' : 'bg-slate-100 text-slate-500'}`}>
-                        {isWinner ? (
-                          `🏆 強過雞胸肉 ${ratio} 倍`
-                        ) : (
-                          `僅基準的 ${(item.efficiency / baselineEfficiency * 100).toFixed(0)}%`
-                        )}
-                      </div>
-                    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left: Input Form -->
+            <div class="lg:col-span-5 space-y-6">
+                <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+                    <h2 class="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-600">
+                        <i class="fa-solid fa-plus-circle"></i> 新增商品標示
+                    </h2>
                     
-                    {/* Visual Comparison Bar */}
-                    <div className="mt-6 relative h-3 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                      {/* Baseline Marker */}
-                      <div 
-                        className="absolute top-0 bottom-0 w-0.5 bg-slate-300 z-10"
-                        style={{ left: `${(baselineEfficiency / 60) * 100}%` }}
-                      ></div>
-                      <div 
-                        className={`h-full transition-all duration-1000 ease-out ${isWinner ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-indigo-400 to-indigo-500'}`} 
-                        style={{ width: `${Math.min((item.efficiency / 60) * 100, 100)}%` }}
-                      ></div>
+                    <form id="proteinForm" class="space-y-5">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">產品名稱</label>
+                                <input type="text" id="name" required placeholder="例如：乳清蛋白、凍乾、雞肉條"
+                                    class="w-full p-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none transition-all">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">售價 (TWD)</label>
+                                    <input type="number" id="price" required step="0.1" placeholder="387"
+                                        class="w-full p-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">整包總重 (g)</label>
+                                    <input type="number" id="totalWeight" required step="0.1" placeholder="160"
+                                        class="w-full p-3 bg-slate-50 rounded-xl border-2 border-transparent focus:border-indigo-500 focus:bg-white outline-none transition-all">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Input Type Selector -->
+                        <div class="p-5 bg-indigo-50 rounded-3xl space-y-4">
+                            <div class="flex flex-wrap gap-2 p-1 bg-white/50 rounded-xl" id="typeSelectors">
+                                <button type="button" data-type="percent" class="type-btn flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white shadow-md">
+                                    <i class="fa-solid fa-percent text-[10px]"></i> 寵物 (%)
+                                </button>
+                                <button type="button" data-type="per100g" class="type-btn flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-lg text-xs font-bold transition-all text-slate-500 hover:bg-white">
+                                    <i class="fa-solid fa-scale-balanced text-[10px]"></i> 每 100g (g)
+                                </button>
+                                <button type="button" data-type="perServing" class="type-btn flex-1 flex items-center justify-center gap-2 py-2 px-2 rounded-lg text-xs font-bold transition-all text-slate-500 hover:bg-white">
+                                    <i class="fa-solid fa-user text-[10px]"></i> 每份 (g)
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label id="proteinLabel" class="block text-xs font-bold text-indigo-800 mb-1">標示蛋白質 %</label>
+                                    <input type="number" id="proteinValue" required step="0.1" placeholder="填寫包裝上的數字"
+                                        class="w-full p-3 bg-white rounded-xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                </div>
+
+                                <div id="servingSizeContainer" class="hidden">
+                                    <label class="block text-xs font-bold text-indigo-800 mb-1">每一份是多少克 (g)？</label>
+                                    <input type="number" id="servingSize" step="0.1" placeholder="30"
+                                        class="w-full p-3 bg-white rounded-xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus"></i> 加入清單
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Baseline Card -->
+                <div class="bg-gradient-to-br from-slate-800 to-slate-950 p-6 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-4 text-indigo-400">
+                            <i class="fa-solid fa-cart-shopping text-xl"></i>
+                            <h3 class="font-bold text-lg">對照基準線</h3>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="text-slate-400 text-xs font-bold uppercase tracking-widest">超商即食雞胸肉</div>
+                            <div class="text-4xl font-black">38.3 <span class="text-sm font-normal text-slate-400">g / 100元</span></div>
+                            <p class="text-slate-500 text-[10px] mt-4 leading-tight">
+                                * 這是你的增肌減脂黃金線。計算邏輯：(23g 蛋白質 / 60元) × 100。
+                            </p>
+                        </div>
                     </div>
-                  </div>
-                );
-              })}
-
-              {items.length > 0 && (
-                <div className="p-5 bg-white rounded-3xl border border-slate-100 shadow-sm flex items-start gap-4">
-                  <div className="p-2 bg-amber-50 rounded-xl">
-                    <AlertCircle className="w-5 h-5 text-amber-500" />
-                  </div>
-                  <div className="space-y-1">
-                    <h5 className="text-sm font-bold text-slate-700">精算師小筆記</h5>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      對於身高 174cm、體重 78kg 且每週重訓三次的你，每日建議攝取約 120g-150g 蛋白質。
-                      若是購買脫水類產品（CP值通常較高），請記得配合大量飲水，確保代謝順暢！
-                    </p>
-                  </div>
+                    <i class="fa-solid fa-drumstick-bite absolute -bottom-4 -right-4 opacity-10 text-[120px]"></i>
                 </div>
-              )}
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
-export default App;
+            <!-- Right: List -->
+            <div class="lg:col-span-7">
+                <div class="flex items-center justify-between mb-6 px-2">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-award text-yellow-500"></i> CP 值排行對決
+                    </h2>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500"></div> 優於基準
+                        </div>
+                        <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                            <div class="w-2 h-2 rounded-full bg-indigo-500"></div> 低於基準
+                        </div>
+                    </div>
+                </div>
+
+                <div id="itemList" class="space-y-4">
+                    <!-- Items will be injected here -->
+                    <div class="bg-white border-2 border-dashed border-slate-200 rounded-[2.5rem] p-16 text-center text-slate-300">
+                        <i class="fa-solid fa-scale-unbalanced-flip text-5xl mb-4 opacity-10"></i>
+                        <p class="font-medium">尚未加入比較對象</p>
+                        <p class="text-xs mt-1">請在左側輸入食品標籤數據</p>
+                    </div>
+                </div>
+
+                <div id="noteContainer" class="hidden mt-6 p-5 bg-white rounded-3xl border border-slate-100 shadow-sm flex items-start gap-4">
+                    <div class="p-2 bg-amber-50 rounded-xl">
+                        <i class="fa-solid fa-circle-info text-amber-500"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h5 class="text-sm font-bold text-slate-700">精算師小筆記</h5>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            對於身高 174cm、體重 78kg 的壯漢，每日建議攝取約 120g-150g 蛋白質。
+                            脫水類產品（CP值通常較高）請務必配合大量飲水！
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 狀態管理
+        let items = [];
+        let currentType = 'percent';
+        const BASELINE_EFFICIENCY = (23 / 60) * 100;
+
+        const form = document.getElementById('proteinForm');
+        const typeButtons = document.querySelectorAll('.type-btn');
+        const servingSizeContainer = document.getElementById('servingSizeContainer');
+        const proteinLabel = document.getElementById('proteinLabel');
+        const itemList = document.getElementById('itemList');
+        const noteContainer = document.getElementById('noteContainer');
+
+        // 切換輸入類型
+        typeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentType = btn.dataset.type;
+                
+                // UI 更新按鈕樣式
+                typeButtons.forEach(b => {
+                    b.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                    b.classList.add('text-slate-500', 'hover:bg-white');
+                });
+                btn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                btn.classList.remove('text-slate-500', 'hover:bg-white');
+
+                // 更新標籤與顯示
+                if (currentType === 'percent') {
+                    proteinLabel.innerText = '標示蛋白質 %';
+                    servingSizeContainer.classList.add('hidden');
+                } else if (currentType === 'per100g') {
+                    proteinLabel.innerText = '標示蛋白質含量 (g) - 每 100g';
+                    servingSizeContainer.classList.add('hidden');
+                } else {
+                    proteinLabel.innerText = '標示蛋白質含量 (g) - 每份';
+                    servingSizeContainer.classList.remove('hidden');
+                }
+            });
+        });
+
+        // 提交表單
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const price = parseFloat(document.getElementById('price').value);
+            const totalWeight = parseFloat(document.getElementById('totalWeight').value);
+            const proteinValue = parseFloat(document.getElementById('proteinValue').value);
+            const servingSize = parseFloat(document.getElementById('servingSize').value);
+
+            let totalProtein = 0;
+            if (currentType === 'percent') {
+                totalProtein = (totalWeight * proteinValue) / 100;
+            } else if (currentType === 'per100g') {
+                totalProtein = (totalWeight / 100) * proteinValue;
+            } else {
+                if (servingSize > 0) totalProtein = (totalWeight / servingSize) * proteinValue;
+            }
+
+            if (totalProtein > 0 && price > 0) {
+                const newItem = {
+                    id: Date.now(),
+                    name,
+                    price,
+                    totalWeight,
+                    totalProtein,
+                    efficiency: (totalProtein / price) * 100
+                };
+                items.push(newItem);
+                renderItems();
+                form.reset();
+                // 恢復預設 Type
+                document.querySelector('[data-type="percent"]').click();
+            }
+        });
+
+        // 刪除項目
+        function removeItem(id) {
+            items = items.filter(item => item.id !== id);
+            renderItems();
+        }
+
+        // 渲染清單
+        function renderItems() {
+            if (items.length === 0) {
+                itemList.innerHTML = `
+                    <div class="bg-white border-2 border-dashed border-slate-200 rounded-[2.5rem] p-16 text-center text-slate-300">
+                        <i class="fa-solid fa-scale-unbalanced-flip text-5xl mb-4 opacity-10"></i>
+                        <p class="font-medium">尚未加入比較對象</p>
+                        <p class="text-xs mt-1">請在左側輸入食品標籤數據</p>
+                    </div>
+                `;
+                noteContainer.classList.add('hidden');
+                return;
+            }
+
+            noteContainer.classList.remove('hidden');
+            const sortedItems = [...items].sort((a, b) => b.efficiency - a.efficiency);
+            
+            itemList.innerHTML = sortedItems.map(item => {
+                const isWinner = item.efficiency > BASELINE_EFFICIENCY;
+                const ratio = (item.efficiency / BASELINE_EFFICIENCY).toFixed(1);
+                const progressWidth = Math.min((item.efficiency / 60) * 100, 100);
+                const baselinePos = (BASELINE_EFFICIENCY / 60) * 100;
+
+                return `
+                    <div class="animate-fade-in group relative bg-white p-6 rounded-[2rem] border-2 transition-all hover:shadow-xl ${isWinner ? 'border-emerald-100' : 'border-white'}">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="w-8 h-8 rounded-lg flex items-center justify-center ${isWinner ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-50 text-indigo-500'}">
+                                        <i class="fa-solid ${isWinner ? 'fa-award' : 'fa-drumstick-bite'} text-sm"></i>
+                                    </span>
+                                    <h4 class="font-bold text-slate-800 text-lg">${item.name}</h4>
+                                </div>
+                                <div class="flex gap-3 text-xs font-bold text-slate-400 ml-10">
+                                    <span>整包 ${item.totalWeight}g</span>
+                                    <span>蛋白質 ${item.totalProtein.toFixed(1)}g</span>
+                                    <span>售價 $${item.price}</span>
+                                </div>
+                            </div>
+                            <button onclick="removeItem(${item.id})" class="text-slate-300 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-full">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex items-end justify-between ml-10">
+                            <div class="space-y-1">
+                                <div class="text-3xl font-black tracking-tight ${isWinner ? 'text-emerald-600' : 'text-indigo-600'}">
+                                    ${item.efficiency.toFixed(1)} <span class="text-sm font-medium text-slate-400">g / 100元</span>
+                                </div>
+                            </div>
+                            <div class="px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-tighter ${isWinner ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-100' : 'bg-slate-100 text-slate-500'}">
+                                ${isWinner ? `🏆 強過雞胸肉 ${ratio} 倍` : `僅基準的 ${(item.efficiency / BASELINE_EFFICIENCY * 100).toFixed(0)}%`}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 relative h-3 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                            <div class="absolute top-0 bottom-0 w-0.5 bg-slate-300 z-10" style="left: ${baselinePos}%"></div>
+                            <div class="h-full transition-all duration-700 ease-out ${isWinner ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-indigo-400 to-indigo-500'}" 
+                                 style="width: ${progressWidth}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
